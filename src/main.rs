@@ -171,15 +171,8 @@ static mut RET: *mut Cont = null_mut();
 fn main() {
     unsafe {
         // we have to box the counter, otherwise call to continuation will always restore 
-        // the same value of the counter. Using `Box` will allocate the counter on the heap
-        // and call to continuation will restore the value of the *box* (which is a pointer)
-        // and updated value of the counter will be stored in the heap.
-        //
-        // # Safety
-        // This variable will be stored in continuation, if you exit this scope and then somehow invoke the continuation
-        // it will be a use-after-free. Using Rc or Arc does not save us from it. Continuation stack saving code does not 
-        // increment these counters, it simply copies raw bytes from the stack to the continuation.
-        let mut count = Box::new(0);
+        // the same value of the counter. 
+        let count = GC_malloc(size_of::<u32>()) as *mut u32;
         
         println!("{}", 100 + call_cc::<u32>(|k| {
             RET = k;
